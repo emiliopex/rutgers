@@ -1,0 +1,49 @@
+#************************************
+#Oct 28th 2021
+#Managerial Econ Analysis
+#Modeling WTI prices
+#************************************
+
+##edit directory:
+setwd("C:/Users/david/OneDrive - Rutgers University/3. Fall 2021/1. Managerial Economic Analysis/Project 1 - Oil Market/database")
+
+#database
+db<-read.csv("database1.csv")
+
+train <- db[49:247, ] #train
+test <- db[232:247, ] #test
+
+#Correlation explanatory variable
+X<-data.frame(db$usoilprod,db$inv,db$indpro,db$fed,db$dji)
+cor(X)
+
+##regression analysis
+reg1<-lm(wti~usoilprod+inv+indpro+fed+dji,data=train)
+summary(reg1)
+par(mfrow=c(2,2))
+plot(reg1)
+
+#testing estimator on test data
+pred<-predict.lm(reg1,test)
+actuals_preds <- data.frame(cbind(actuals=test$wti, predicteds=pred))
+correlation_accuracy <- cor(actuals_preds)
+head(actuals_preds)
+plot(actuals_preds)
+
+#heterocedasticity test
+lmtest::bptest(reg1)
+
+#multicolinearity test
+car::vif(reg1)
+
+#log-linearization
+reg2<-lm(log(wti)~log(indpro)+log(usoilprod)+log(fed)+log(inv)+log(dji),data=train)
+summary(reg2)
+par(mfrow=c(2,2))
+plot(reg2)
+
+#heterocedasticity test
+lmtest::bptest(reg2)
+
+#multicolinearity test
+car::vif(reg2)
